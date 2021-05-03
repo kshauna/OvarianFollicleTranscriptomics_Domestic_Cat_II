@@ -1,117 +1,10 @@
-# Analysis workflow
-## Previously see https://github.com/kshauna/OvarianFollicleTranscriptomics-DomesticCat
+##  Differentially expressed genes and protein localisation studies identifies a gonadotropic and steroidogenic signalling potential in the early preantral ovarian follicles of the domestic cat 
+#### Kehoe, S.<sup>1</sup>, Jewgenow, K.<sup>1</sup>, Braun, B.C.<sup>1</sup> 
+#### <sup>1</sup> Department of Reproduction Biology, Leibniz-Institute for Zoo and Wildlife Research, Alfred-Kowalke-Straße 17, 10315 Berlin, Germany, kehoe@izw-berlin.de 
 
->We're interested to know if transcript count data can be extracted from two sections: import and create sample info and plotting genes. For the first section we would like to extract the data which summarizes transcript abundance, counts, and length prior to the create DESeqDataSet section. My supervisor thinks that there may be transcripts in this data that are not included in the DESeq2 output - as she phrased it: does DESeq2 deal with all transcripts independent if they are DEGs or not? In my opinion, I would assume that the significant and non-significant DESeq2 gene lists are all the transcripts found full stop but I could be wrong! 
+### Previously see https://github.com/kshauna/OvarianFollicleTranscriptomics-DomesticCat
 
-
-I'm not really sure what they mean. But all the transcripts in `tx.fa` seem to belong to a gene:
-
-```sh
-grep "^>" tx.fa -c
-```
-```
-42556
-```
-```sh
-grep "^>" tx.fa | grep "gene:" -c
-```
-```
-42556
-```
-
-The transcript-level quantification is used to make the gene-level differential expression more sensitive/accurate. By the time the `salmon` quantification results are read into `R`, they are already summarized at the gene level. The `txi` list contains 3 matrices (`abundance`, `counts`, and `length`) and a vector (`countsFromAbundance`).
-
-```R
-txi <- tximport(files, type = "salmon", tx2gene = tx2gene)
-str(txi)
-```
-```
-List of 4
- $ abundance          : num [1:26003, 1:9] 1.482 6.185 0.679 7.649 26.476 ...
-  ..- attr(*, "dimnames")=List of 2
-  .. ..$ : chr [1:26003] "ENSFCAG00000000001.5" "ENSFCAG00000000007.5" "ENSFCAG00000000015.5" "ENSFCA
-G00000000022.5" ...
-  .. ..$ : chr [1:9] "Sample_1_S1" "Sample_2_S2" "Sample_3_S3" "Sample_4_S4" ...
- $ counts             : num [1:26003, 1:9] 143 630 30 692 1256 ...
-  ..- attr(*, "dimnames")=List of 2
-  .. ..$ : chr [1:26003] "ENSFCAG00000000001.5" "ENSFCAG00000000007.5" "ENSFCAG00000000015.5" "ENSFCA
-G00000000022.5" ...
-  .. ..$ : chr [1:9] "Sample_1_S1" "Sample_2_S2" "Sample_3_S3" "Sample_4_S4" ...
- $ length             : num [1:26003, 1:9] 2313 2443 1060 2170 1138 ...
-  ..- attr(*, "dimnames")=List of 2
-  .. ..$ : chr [1:26003] "ENSFCAG00000000001.5" "ENSFCAG00000000007.5" "ENSFCAG00000000015.5" "ENSFCA
-G00000000022.5" ...
-  .. ..$ : chr [1:9] "Sample_1_S1" "Sample_2_S2" "Sample_3_S3" "Sample_4_S4" ...
- $ countsFromAbundance: chr "no"
-```
-
-```R
-head(txi$abundance)
-```
-```
-                     Sample_1_S1 Sample_2_S2 Sample_3_S3 Sample_4_S4
-ENSFCAG00000000001.5    1.482485    1.271409    0.000000    5.663440
-ENSFCAG00000000007.5    6.185080   15.686640    0.532664   23.392618
-ENSFCAG00000000015.5    0.678950    1.422530    0.000000    0.399262
-ENSFCAG00000000022.5    7.648640    9.079310    8.593270    4.472780
-ENSFCAG00000000023.4   26.476400   10.496200    7.428500    2.980420
-ENSFCAG00000000024.5  280.334000  163.253000  156.250000   44.985200
-                     Sample_5_S5 Sample_6_S6 Sample_7_S7 Sample_8_S8
-ENSFCAG00000000001.5   0.7836445    2.606769    3.627981    2.981844
-ENSFCAG00000000007.5  15.1304680   17.701200   16.883139    8.144680
-ENSFCAG00000000015.5   0.9961330    0.885168    0.221123    1.020830
-ENSFCAG00000000022.5   6.2953190    5.270570    4.754994    4.540500
-ENSFCAG00000000023.4   8.8379800    9.753650    8.599950   12.706400
-ENSFCAG00000000024.5 140.7000000   86.435800  168.723000  159.738000
-                     Sample_9_S9
-ENSFCAG00000000001.5    1.997554
-ENSFCAG00000000007.5   11.534600
-ENSFCAG00000000015.5    0.103796
-ENSFCAG00000000022.5    3.280650
-ENSFCAG00000000023.4    6.722110
-ENSFCAG00000000024.5  118.764000
-```
-
-The results contain the same genes as the matrices:
-
-```R
-all(rownames(txi$abundance) == rownames(res_AB))
-```
-```
-[1] TRUE
-```
-```R
-all(rownames(txi$counts) == rownames(res_AB))
-```
-```
-[1] TRUE
-```
-```R
-all(rownames(txi$length) == rownames(res_AB))
-```
-```
-[1] TRUE
-```
-
-So all genes are in there (and all the transcripts belonged to a gene). If they are interested in the transcript abundance/counts then those are in the `salmon` output directories:
-
-```sh
-head Sample_1_S1/quant.sf
-```
-```
-Name    Length  EffectiveLength TPM     NumReads
-ENSFCAT00000050682.1    300     125.391 0       0
-ENSFCAT00000064547.1    324     139.607 2.73975 15.95
-ENSFCAT00000061608.1    324     139.607 1.12081 6.525
-ENSFCAT00000054676.1    285     117.225 0       0
-ENSFCAT00000054867.1    324     139.607 1.12081 6.525
-ENSFCAT00000061928.1    285     117.225 0       0
-ENSFCAT00000056337.1    285     117.225 0       0
-ENSFCAT00000027343.3    423     212.461 1.34608 11.9259
-ENSFCAT00000032528.3    423     212.461 3.84593 34.0741
-```
-
->For the second section, we would like to extract the y-axis values from the dot plots so for each sample type (PrF, PF, and SF) we would like to extract the normalised transcript counts. Do you know how this can be done?
+> Extracting the y-axis values from the dot plots so for each sample type (PrF, PF, and SF) we would like to extract the normalised transcript counts. Do you know how this can be done?
 
 The counts are present as a matrix in a slot of the `DESeqDataSet` S4 object:
 
@@ -225,6 +118,7 @@ library(tidyr)
 library(MASS)
 library(visreg)
 library(cowplot)
+
 # get the normalized counts out
 ddc <- counts(dds, normalized = TRUE) %>% as.data.frame
 # carry over the gene names
@@ -276,22 +170,8 @@ bmp15_fd %>% dplyr::select(-se) %>% mutate_at(c("coef", "lower", "upper"), funct
 # From basic glm:
 bmp15_fit
 ```
-## Functional Annotation Clustering
-## DAVID
-```
-* Input ENTREZ IDs and select for Felis catus
-* DAVID accepts: ENSEMBL_GENE_ID, ENSEMBL_TRANSCRIPT_ID, ENTREZ_GENE_ID
-* Input DEG ENTREZs that were created from the 'no version ENSFCAGs' with biomaRt, down- and up-regulated were not input seperately
-* Deselect defaults and select  GOTERM_BP_FAT,  GOTERM_CC_FAT, GOTERM_MF_FAT, and KEGG pathways
-* Select Functional Annotation Clustering
-* Options: 
-        * Kappa Similarity: Similarity Term Overlap 3 and Similarity Threshold 0.60
-        * Classification: Initial Group Membership 3 Final Group Membership 3 Multiple Linkage Threshold 0.50
-        * Enrichment Thresholds (EASE) 0.2
-        * Display: Fold Change, Benjamini, and FDR
-        * Outputs: Annotation Cluster No., Enrichment Score, Count, P_Value, Benjamini, Fold Change, FDR.
-```
-## MetaScape
+
+## MetaScape 
 Metascape's current architecture does not support domestic cat thus, we converted Felis Catus ENTREZ IDs into human orthologs, and then proceeded with Metascape analysis. 
 
 * go to https://biit.cs.ut.ee/gprofiler/gorth.cgi
@@ -350,8 +230,7 @@ loaded via a namespace (and not attached):
  [97] tibble_2.1.3               rvcheck_0.1.7              AnnotationDbi_1.40.0       memoise_1.1.0             
 [101] IRanges_2.12.0             cluster_2.1.0       
 ```
-# Cited packages
-**bioMart** https://bioconductor.org/packages/release/bioc/html/biomaRt.html Durinck S, Spellman P, Birney E, Huber W (2009). “Mapping identifiers for the integration of genomic datasets with the R/Bioconductor package biomaRt.” Nature Protocols, 4, 1184–1191 & Durinck S, Moreau Y, Kasprzyk A, Davis S, De Moor B, Brazma A, Huber W (2005). “BioMart and Bioconductor: a powerful link between biological databases and microarray data analysis.” Bioinformatics, 21, 3439–3440.
+# Packages mentioned in the manuscript:
 
 **cowplot** https://cran.r-project.org/web/packages/cowplot/index.html Author: Claus O. Wilke ORCID iD [aut, cre]
 
@@ -359,28 +238,13 @@ loaded via a namespace (and not attached):
 
 **dplyr** https://cran.r-project.org/web/packages/dplyr/index.html Author:	Hadley Wickham ORCID iD [aut, cre], Romain François ORCID iD [aut], Lionel Henry [aut], Kirill Müller ORCID iD [aut], RStudio [cph, fnd]
 
-**FastQC** https://www.bioinformatics.babraham.ac.uk/projects/fastqc/ Andrews, S. (2010). FastQC:  A Quality Control Tool for High Throughput Sequence Data [Online]. 
-
 **ggplot2** https://cran.r-project.org/web/packages/ggplot2/index.html Author: Hadley Wickham [aut, cre], Winston Chang [aut], Lionel Henry [aut], Thomas Lin Pedersen [aut], Kohske Takahashi [aut], Claus Wilke [aut], Kara Woo [aut], Hiroaki Yutani [aut], Dewey Dunnington [aut], RStudio [cph]
-
-**hexbin** https://cran.r-project.org/web/packages/hexbin/hexbin.pdf Author: Dan Carr <dcarr@voxel.galaxy.gmu.edu>, ported by Nicholas
-Lewin-Koh and Martin Maechler <maechler@stat.math.ethz.ch>, contains copies of lattice functions written by Deepayan Sarkar <deepayan.sarkar@r-project.org>
 
 **IHW** http://bioconductor.org/packages/release/bioc/html/IHW.html Ignatiadis N, Klaus B, Zaugg J, Huber W (2016). “Data-driven hypothesis weighting increases detection power in genome-scale multiple testing.” Nature Methods. doi: 10.1038/nmeth.3885 & Ignatiadis N, Huber W (2017). “Covariate-powered weighted multiple testing with false discovery rate control.” arXiv. doi: arXiv:1701.05179.
 
 **MASS** https://cran.r-project.org/web/packages/MASS/index.html Author: Brian Ripley [aut, cre, cph], Bill Venables [ctb], Douglas M. Bates [ctb], Kurt Hornik [trl] (partial port ca 1998), Albrecht Gebhardt [trl] (partial port ca 1998), David Firth [ctb]
 
-**pheatmap** https://cran.r-project.org/web/packages/pheatmap/index.html Author: Raivo Kolde
-
-**RColorBrewer** https://cran.r-project.org/web/packages/RColorBrewer/index.html Author: Erich Neuwirth [aut, cre]
-
-**readr** https://cran.r-project.org/web/packages/readr/index.html Author: Hadley Wickham [aut], Jim Hester [aut, cre], Romain Francois [aut], R Core Team [ctb] (Date time code adapted from R), RStudio [cph, fnd], Jukka Jylänki [ctb, cph] (grisu3 implementation), Mikkel Jørgensen [ctb, cph] (grisu3 implementation)
-
-**Salmon** https://combine-lab.github.io/salmon/ Patro, R., Duggal, G., Love, M. I., Irizarry, R. A., & Kingsford, C. (2017). Salmon provides fast and bias-aware quantification of transcript expression. Nature Methods.
-
 **tidyr** https://cran.r-project.org/web/packages/tidyr/index.html Author: Hadley Wickham [aut, cre], Lionel Henry [aut], RStudio [cph]
-
-**tximport** https://bioconductor.org/packages/release/bioc/html/tximport.html Soneson C, Love MI, Robinson MD (2015). “Differential analyses for RNA-seq: transcript-level estimates improve gene-level inferences.” F1000Research, 4. doi: 10.12688/f1000research.7563.1.
 
 **visreg** https://cran.r-project.org/web/packages/visreg/visreg.pdf Author: Patrick Breheny, Woodrow Burchett
       
