@@ -2,10 +2,77 @@
 #### Kehoe, S.<sup>1</sup>, Jewgenow, K.<sup>1</sup>, Braun, B.C.<sup>1</sup> 
 #### <sup>1</sup> Department of Reproduction Biology, Leibniz-Institute for Zoo and Wildlife Research, Alfred-Kowalke-Straße 17, 10315 Berlin, Germany, kehoe@izw-berlin.de 
 
-### Previously see https://github.com/kshauna/OvarianFollicleTranscriptomics-DomesticCat
+##  Previously see https://github.com/kshauna/OvarianFollicleTranscriptomics-DomesticCat
 
-> Extracting the y-axis values from the dot plots so for each sample type (PrF, PF, and SF) we would like to extract the normalised transcript counts. Do you know how this can be done?
+## plotting genes
 
+```
+library(DESeq2)
+library(dplyr)
+library(tidyr)
+library(MASS)
+library(visreg)
+library(cowplot)
+```
+```
+# accessing the normalised counts 
+ddc <- counts(dds, normalized = TRUE) %>% as.data.frame
+# carry over the gene names
+ddc$gene_id <- rownames(ddc)
+# reformat from wide to long
+ddc_long <- gather(ddc, key = library, value = count, -gene_id)
+# add the sample data
+ddc_long_meta <- inner_join(ddc_long, data.frame(dds@colData, library = dds@colData[,1]))
+
+
+# This is a bit backwards because it involves taking the normalized counts back out, fitting a GLM, 
+# and then extracting the coefficients and intervals for plotting. 
+# DESeq has already fitted GLMs for each gene but the data aren't in a very useful state.
+# plot a given gene
+
+glm.nb(count ~ type, data = subset(ddc_long_meta, gene_id %in% c("ENSFCAG00000028290.3"))) %>%
+  visreg
+bmp15_fit <- glm.nb(count ~ type, data = subset(ddc_long_meta, gene_id %in% c("ENSFCAG00000028290.3"))) %>%
+  visreg(plot = FALSE) %$% fit %>% dplyr::select(-count)
+# visreg returns logged coefficients/bounds so compute the exponentials
+bmp15_fit$visregFit <- exp(bmp15_fit$visregFit)
+bmp15_fit$visregUpr <- exp(bmp15_fit$visregUpr)
+bmp15_fit$visregLwr <- exp(bmp15_fit$visregLwr)
+
+
+ggplot(bmp15_fit, aes(x = type, y = visregFit)) +
+  scale_y_log10(breaks = c(1, 10, 100, 1000, 10000, 100000), limits = c(0.1, 100000)) +
+  geom_pointrange(aes(ymin = visregLwr, ymax = visregUpr), size = 1) +
+  xlab("Follicle type") + ylab("Gene expression (normalized count)")
+# With n=3 it's probably worth putting the actual data points on too.
+# DESeq2 has already fitted glms. So it would be possible to use those values instead. 
+# The coefficients it provides aren't in a very useful format:
+coef(dds, SE = FALSE) %>% subset(., rownames(.) == "ENSFCAG00000028290.3")
+# So if you want to use them directly from DESeq, I guess the easiest thing to do would be to remove the intercept. i.e. run it again without an intercept:
+dds2 <- dds
+dds2@design <- ~ type + 0
+dds2 <- DESeq(dds2)
+
+# This would give more useful coefficients:
+coef(dds2, SE = FALSE) %>% subset(., rownames(.) == "ENSFCAG00000028290.3")
+# but they are log2, so:
+2^coef(dds2, SE = FALSE) %>% subset(., rownames(.) == "ENSFCAG00000028290.3") %>% t
+# These are almost identical to the coefficients from glm.nb:
+bmp15_fit
+# The intervals could will be a bit different for some genes (e.g. because of the shrinkage of the dispersion parameter in DESeq). 
+# For "ENSFCAG00000028290.3", they are basically the same.
+ce <- coef(dds2, SE = FALSE) %>% subset(., rownames(.) == "ENSFCAG00000028290.3") %>% t %>% as.data.frame
+cee <- coef(dds2, SE = TRUE) %>% subset(., rownames(.) == "ENSFCAG00000028290.3") %>% t %>% as.data.frame
+bmp15_fd <- data.frame(type = rownames(ce), coef = ce[,1], se = cee[,1])
+bmp15_fd$lower <- bmp15_fd$coef - (2*bmp15_fd$se)
+bmp15_fd$upper <- bmp15_fd$coef + (2*bmp15_fd$se)
+# From DESeq:
+bmp15_fd %>% dplyr::select(-se) %>% mutate_at(c("coef", "lower", "upper"), function(x) (2^x))
+# From basic glm:
+bmp15_fit
+```
+
+Extracting the y-axis values (normalised transcript counts) from Figure 2 and Supplemental Figure 1 for each sample type (PrF, PF, and SF): 
 The counts are present as a matrix in a slot of the `DESeqDataSet` S4 object:
 
 ```R
@@ -35,7 +102,7 @@ ENSFCAG00000000023.4         209
 ENSFCAG00000000024.5         637
 ```
 
-It's easier to access them with the `counts` function:
+Accessing with the `counts` function:
 
 ```R
 head(counts(dds, normalized = FALSE))
@@ -64,7 +131,7 @@ ENSFCAG00000000023.4         209
 ENSFCAG00000000024.5         637
 ```
 
-Or normalized:
+Normalised:
 
 ```R
 head(counts(dds, normalized = TRUE))
@@ -93,7 +160,7 @@ ENSFCAG00000000023.4  266.457613
 ENSFCAG00000000024.5  825.534020
 ```
 
-If you just want the counts for a specific gene then they can also be accessed with the `plotCounts` function:
+Retrieving counts for a specific gene with the `plotCounts` function:
 
 ```R
 plotCounts(dds, gene = "ENSFCAG00000000001.5", intgroup = "type", returnData = TRUE, normalized = TRUE)
@@ -109,66 +176,6 @@ Sample_6_S6 201.93228    B
 Sample_7_S7 282.00216    C
 Sample_8_S8 223.80534    C
 Sample_9_S9 164.06642    C
-```
-## plotting genes
-```
-library(DESeq2)
-library(dplyr)
-library(tidyr)
-library(MASS)
-library(visreg)
-library(cowplot)
-
-# get the normalized counts out
-ddc <- counts(dds, normalized = TRUE) %>% as.data.frame
-# carry over the gene names
-ddc$gene_id <- rownames(ddc)
-# reformat from wide to long
-ddc_long <- gather(ddc, key = library, value = count, -gene_id)
-# add the sample data
-ddc_long_meta <- inner_join(ddc_long, data.frame(dds@colData, library = dds@colData[,1]))
-# This is a bit backwards because it involves taking the normalized counts back out, fitting a GLM, 
-# and then extracting the coefficients and intervals for plotting. 
-# DESeq has already fitted GLMs for each gene but the data aren't in a very useful state.
-# plot a given gene
-glm.nb(count ~ type, data = subset(ddc_long_meta, gene_id %in% c("ENSFCAG00000028290.3"))) %>%
-  visreg
-bmp15_fit <- glm.nb(count ~ type, data = subset(ddc_long_meta, gene_id %in% c("ENSFCAG00000028290.3"))) %>%
-  visreg(plot = FALSE) %$% fit %>% dplyr::select(-count)
-# visreg returns logged coefficients/bounds so compute the exponentials
-bmp15_fit$visregFit <- exp(bmp15_fit$visregFit)
-bmp15_fit$visregUpr <- exp(bmp15_fit$visregUpr)
-bmp15_fit$visregLwr <- exp(bmp15_fit$visregLwr)
-# 
-ggplot(bmp15_fit, aes(x = type, y = visregFit)) +
-  scale_y_log10(breaks = c(1, 10, 100, 1000, 10000, 100000), limits = c(0.1, 100000)) +
-  geom_pointrange(aes(ymin = visregLwr, ymax = visregUpr), size = 1) +
-  xlab("Follicle type") + ylab("Gene expression (normalized count)")
-# With n=3 it's probably worth putting the actual data points on too.
-# DESeq2 has already fitted glms. So it would be possible to use those values instead. 
-# The coefficients it provides aren't in a very useful format:
-coef(dds, SE = FALSE) %>% subset(., rownames(.) == "ENSFCAG00000028290.3")
-# So if you want to use them directly from DESeq, I guess the easiest thing to do would be to remove the intercept. i.e. run it again without an intercept:
-dds2 <- dds
-dds2@design <- ~ type + 0
-dds2 <- DESeq(dds2)
-# This would give more useful coefficients:
-coef(dds2, SE = FALSE) %>% subset(., rownames(.) == "ENSFCAG00000028290.3")
-# but they are log2, so:
-2^coef(dds2, SE = FALSE) %>% subset(., rownames(.) == "ENSFCAG00000028290.3") %>% t
-# These are almost identical to the coefficients from glm.nb:
-bmp15_fit
-# The intervals could will be a bit different for some genes (e.g. because of the shrinkage of the dispersion parameter in DESeq). 
-# For "ENSFCAG00000028290.3", they are basically the same.
-ce <- coef(dds2, SE = FALSE) %>% subset(., rownames(.) == "ENSFCAG00000028290.3") %>% t %>% as.data.frame
-cee <- coef(dds2, SE = TRUE) %>% subset(., rownames(.) == "ENSFCAG00000028290.3") %>% t %>% as.data.frame
-bmp15_fd <- data.frame(type = rownames(ce), coef = ce[,1], se = cee[,1])
-bmp15_fd$lower <- bmp15_fd$coef - (2*bmp15_fd$se)
-bmp15_fd$upper <- bmp15_fd$coef + (2*bmp15_fd$se)
-# From DESeq:
-bmp15_fd %>% dplyr::select(-se) %>% mutate_at(c("coef", "lower", "upper"), function(x) (2^x))
-# From basic glm:
-bmp15_fit
 ```
 
 ## MetaScape 
@@ -230,7 +237,7 @@ loaded via a namespace (and not attached):
  [97] tibble_2.1.3               rvcheck_0.1.7              AnnotationDbi_1.40.0       memoise_1.1.0             
 [101] IRanges_2.12.0             cluster_2.1.0       
 ```
-# Packages mentioned in the manuscript:
+##  Packages mentioned in the manuscript:
 
 **cowplot** https://cran.r-project.org/web/packages/cowplot/index.html Author: Claus O. Wilke ORCID iD [aut, cre]
 
@@ -246,5 +253,4 @@ loaded via a namespace (and not attached):
 
 **tidyr** https://cran.r-project.org/web/packages/tidyr/index.html Author: Hadley Wickham [aut, cre], Lionel Henry [aut], RStudio [cph]
 
-**visreg** https://cran.r-project.org/web/packages/visreg/visreg.pdf Author: Patrick Breheny, Woodrow Burchett
-      
+**visreg** https://cran.r-project.org/web/packages/visreg/visreg.pdf Author: Patrick Breheny, Woodrow Burchett     
