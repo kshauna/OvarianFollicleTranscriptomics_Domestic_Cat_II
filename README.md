@@ -6,7 +6,7 @@
  
  | Author of script: | Author of repository: | Date:   |
 | --------------- | --------------- | --------------- |
-| Paul R. Johnston | Shauna Kehoe |  May 03, 2021  |
+| Paul R. Johnston<sup>2</sup> | Shauna Kehoe |  May 03, 2021  |
 
  
 #### plotting genes
