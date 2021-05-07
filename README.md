@@ -10,11 +10,7 @@
 
 <sup>1</sup> Department of Reproduction Biology, Leibniz-Institute for Zoo and Wildlife Research (IZW), Alfred-Kowalke-Straße 17, 10315 Berlin, Germany, Corresponding author: kehoe@izw-berlin.de 
 
-<sup>2</sup> Berlin Center for Genomics in Biodiversity Research BeGenDiv, Königin-Luise-Straße 6-8, D-14195, Berlin, Germany
-
-<sup>2</sup> Leibniz-Institute of Freshwater Ecology and Inland Fisheries, Müggelseedamm 310, 12587, Berlin, Germany
-
-<sup>2</sup> Freie Universität Berlin, Institut für Biologie, Königin-Luise-Straße 1-3, 14195, Berlin, Germany
+<sup>2</sup> Berlin Center for Genomics in Biodiversity Research BeGenDiv, Königin-Luise-Straße 6-8, D-14195, Berlin, Germany; Leibniz-Institute of Freshwater Ecology and Inland Fisheries, Müggelseedamm 310, 12587, Berlin, Germany; Freie Universität Berlin, Institut für Biologie, Königin-Luise-Straße 1-3, 14195, Berlin, Germany
 
 #### plotting genes
 
