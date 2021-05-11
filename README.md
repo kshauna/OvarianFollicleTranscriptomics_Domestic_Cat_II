@@ -69,7 +69,7 @@ ggplot(gene_fit, aes(x = type, y = visregFit)) +
   xlab("Follicle type") + ylab("Gene expression (normalised count)")
 ```
 
-## Supplementary File 2: The normalised gene count for each gene per sample (early preantral follicle samples from the domestic cat).
+## Supplementary File 2: The normalised gene count per early preantral follicle sample from the domestic cat. 
 
 Extracting the y-axis values (normalised transcript counts) from Figure 2 and Supplemental Figure 1 for each sample type (PrF, PF, and SF): 
 The counts are present as a matrix in a slot of the `DESeqDataSet` S4 object:
@@ -176,15 +176,6 @@ Sample_7_S7 282.00216    C
 Sample_8_S8 223.80534    C
 Sample_9_S9 164.06642    C
 ```
-
-#### MetaScape 
-Metascape's current architecture does not support domestic cat thus, we converted Felis Catus ENTREZ IDs into human orthologs, and then proceeded with Metascape analysis. 
-
-* go to https://biit.cs.ut.ee/gprofiler/gorth.cgi
-* use g:Orth tool
-* convert those identifiers from your species to human (notice, your IDs should be space separated, comma does not work) 
-* then you can take the converted ENSG (Ensembl Gene IDs) IDs for Metascape analysis
-* Metascape's 'Express analysis' was selected
 
 #### sessionInfo()
 ```
