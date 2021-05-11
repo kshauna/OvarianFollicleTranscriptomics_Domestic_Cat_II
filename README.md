@@ -1,16 +1,21 @@
-##  Differentially expressed genes and protein localisation studies identifies a gonadotropic and steroidogenic signalling potential in the early preantral ovarian follicles of the domestic cat 
-#### Kehoe, S.<sup>1</sup>, Jewgenow, K.<sup>1</sup>, Braun, B.C.<sup>1</sup> 
+#  Early preantral follicles of the domestic cat express a gonadotropic and steroidogenic signalling potential
+#### Kehoe, S.<sup>1</sup>, Jewgenow, K.<sup>1</sup>, Johnston, P.R.<sup>2</sup>, Braun, B.C.<sup>1</sup> 
 #### <sup>1</sup> Department of Reproduction Biology, Leibniz-Institute for Zoo and Wildlife Research, Alfred-Kowalke-Straße 17, 10315 Berlin, Germany, kehoe@izw-berlin.de 
 
 #### Previously see https://github.com/kshauna/OvarianFollicleTranscriptomics-DomesticCat
  
- | Author of repository: | Author of script: | Date:   |
+| Author of repository: | Author of script: | Date:   |
 | --------------- | --------------- | --------------- |
 | Shauna Kehoe<sup>1</sup> | Paul R. Johnston<sup>2</sup> |  May 03, 2021  |
 
-<sup>1</sup> Department of Reproduction Biology, Leibniz-Institute for Zoo and Wildlife Research (IZW), Alfred-Kowalke-Straße 17, 10315 Berlin, Germany, Corresponding author: kehoe@izw-berlin.de 
+<sup>1</sup> Department of Reproduction Biology, Leibniz-Institute for Zoo and Wildlife Research (IZW), Alfred-Kowalke-Straße 17, 10315 Berlin, Germany, corresponding author: kehoe@izw-berlin.de 
 
 <sup>2</sup> Berlin Center for Genomics in Biodiversity Research BeGenDiv, Königin-Luise-Straße 6-8, D-14195, Berlin, Germany; Leibniz-Institute of Freshwater Ecology and Inland Fisheries, Müggelseedamm 310, 12587, Berlin, Germany; Freie Universität Berlin, Institut für Biologie, Königin-Luise-Straße 1-3, 14195, Berlin, Germany
+
+
+## Figure 2: Gene expression of gonadotropin receptors, steroidogenic enzymes and a transporter, and steroid receptor genes in the early preantral follicles of the domestic cat.
+### and
+## Supplementary Figure 1: Gene expression of gonadotropin receptors, steroidogenic enzymes and a transporter, and steroid receptor genes in the early preantral follicles of the domestic cat. 
 
 #### plotting genes
 
@@ -63,6 +68,8 @@ ggplot(gene_fit, aes(x = type, y = visregFit)) +
   geom_pointrange(aes(ymin = visregLwr, ymax = visregUpr), size = 1) +
   xlab("Follicle type") + ylab("Gene expression (normalised count)")
 ```
+
+## Supplementary File 2: The normalised gene count for each gene per sample (early preantral follicle samples from the domestic cat).
 
 Extracting the y-axis values (normalised transcript counts) from Figure 2 and Supplemental Figure 1 for each sample type (PrF, PF, and SF): 
 The counts are present as a matrix in a slot of the `DESeqDataSet` S4 object:
