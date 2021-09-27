@@ -13,9 +13,7 @@
 <sup>2</sup> Berlin Center for Genomics in Biodiversity Research BeGenDiv, Königin-Luise-Straße 6-8, D-14195, Berlin, Germany; Leibniz-Institute of Freshwater Ecology and Inland Fisheries, Müggelseedamm 310, 12587, Berlin, Germany; Freie Universität Berlin, Institut für Biologie, Königin-Luise-Straße 1-3, 14195, Berlin, Germany
 
 
-## Figure 2: Gene expression of gonadotropin receptors, steroidogenic enzymes and a transporter, and steroid receptor genes in the early preantral follicles of the domestic cat.
-### and
-## Supplementary Figure 1: Gene expression of gonadotropin receptors, steroidogenic enzymes and a transporter, and steroid receptor genes in the early preantral follicles of the domestic cat. 
+## Figure 1: Gene expression of gonadotropin receptors, steroidogenic enzymes and a transporter, and steroid receptor genes in the early preantral follicles of the domestic cat.
 
 #### plotting genes
 
